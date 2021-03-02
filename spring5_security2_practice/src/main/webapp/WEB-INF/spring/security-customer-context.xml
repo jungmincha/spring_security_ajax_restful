@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+   xmlns="http://www.springframework.org/schema/security"
+   xmlns:beans="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+   <!-- *누군가는 스프링 시큐리티 1. /login - 누군가가 로그인페이지를 응답해주고 있다. 2. /login - 누군가가 
+      처리해 주고 있다. 3. /login - 누군가가 낚아 채고 있음(why : 내가 컨트롤러에서 처리 하고 있지않으므로) -->
+
+
+
+   <http><!-- 좁은데에서 큰쪽으로 -->
+   
+   <!-- <csrf disabled = "false"/>  csrf를 적용하겠다 -->
+   
+      <intercept-url pattern="/login/loginForm"
+         access="permitAll" />
+      <intercept-url pattern="/" access="permitAll" />
+      <intercept-url pattern="/restful/**"
+      
+      
+         access="hasRole('ROLE_ADMIN')" />
+      <intercept-url pattern="/user/**" access="permitAll" />
+      <intercept-url pattern="/user/addUser"
+         access="permitAll" />
+      <intercept-url pattern="/**" access="permitAll" />
+
+      <!-- 로그인 페이지 커스텀마이징 -->
+      <form-login login-page="/login/loginForm"
+         default-target-url="/"
+         authentication-failure-url="/login/loginForm?error"
+         username-parameter="id" password-parameter="password" />
+
+      <logout logout-url="/logout" logout-success-url="/" />
+
+
+      <!-- 403 에러 처리 -->
+      <access-denied-handler
+         error-page="/login/accessDenied" />
+   </http>
+   <beans:bean id="userDetailsService"
+      class="org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl">
+      <beans:property name="dataSource" ref="dataSource" />
+   </beans:bean>
+
+
+   <!-- 암호화 모듈 --> <!-- 로그인시 반드시 실행 -->
+   <beans:bean id="customNoOpPasswordEncoder"
+      class="edu.bit.ex.security.CustomNoOpPasswordEncoder" />
+   <beans:bean id="memberDetailsService"
+      class="edu.bit.ex.security.MemberDetailsService" />
+   <beans:bean id="bcryptPasswordEncoder"
+      class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+
+   <!-- provider -->
+   <authentication-manager>
+      <authentication-provider
+         user-service-ref="memberDetailsService">
+
+		
+
+         <!-- 암호화 모듈 -->
+         <password-encoder ref="customNoOpPasswordEncoder" />
+
+
+      </authentication-provider>
+   </authentication-manager>
+
+</beans:beans>
